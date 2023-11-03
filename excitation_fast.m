@@ -10,7 +10,7 @@ tic;
 myseed = 1;
 rng(myseed)
 
-L = 18;
+L = 4;
 num_T = 100;
 T = 0:2*num_T;
 nT = 2*num_T+1;
@@ -67,7 +67,7 @@ expHx1 = sparse(row1,col1,(-1i*sin(g0))^(L-1)*cos(g0));
 expHx2 = sparse(row2,col2,(-1i*sin(g0))^(L-2)*(cos(g0))^2);
 expHx3 = sparse(row3,col3,(-1i*sin(g0))^(L-3)*(cos(g0))^3);
 % expHx4 = sparse(row4,col4,(-1i*sin(g0))^(L-4)*(cos(g0))^4);
-delete row1 row2 row3 col1 col2 col3
+clear row1 row2 row3 col1 col2 col3
 expHxL = sparse(1:len,len:-1:1,(-1i*sin(g0))^L);
 expHx = expHx1 + expHx2 + expHx3 + expHxL;
 % expHx = expHx1 + expHx2 + expHx3 + expHx4 + expHxL;
