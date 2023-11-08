@@ -1,4 +1,4 @@
-clear;
+% clear;
 clc;
 format long
 tic;
@@ -7,7 +7,7 @@ tic;
 myseed = 1;
 rng(myseed)
 
-L = 10;
+L = 6;
 num_T = 200;
 T = 0:2*num_T;
 nT = 2*num_T+1;
@@ -15,7 +15,7 @@ dt = 1;
 len = 2^L;
 g = 1;
 J = -1;
-g0 = 0.01;
+g0 = 0.1;
 
 sigmaz = [1;-1];
 sigmax = [0 1;1 0];
@@ -61,26 +61,25 @@ phi = phi0;
 phit_store = zeros(len,nT);
 phit_store(:,1) = phi0;
 
-[V1,D1] = eig(J*Hxx+g*diag(Hz));
+H1 = J*Hxx+g*diag(Hz);
+[V1,D1] = eig(H1);
 e1 = diag(D1);
 [V2,D2] = eig(J*Hxx-g*diag(Hz));
 e2 = diag(D2);
 
-trans1 = exp(-1i*e1);
-trans2 = exp(-1i*e2);
+trans1 = exp(-1i*e1*dt);
+trans2 = exp(-1i*e2*dt);
 
 for i = 1:num_T
     % Hxx+Hz
     temp = V1'*phi;
-    trans = trans1;
-    temp = temp.*trans;
+    temp = temp.*trans1;
     phi = V1*temp;
     phit_store(:,2*i) = phi;
 
     % Hxx-Hz
     temp = V2'*phi;
-    trans = trans2;
-    temp = temp.*trans;
+    temp = temp.*trans2;
     phi = V2*temp;
     phit_store(:,2*i+1) = phi;
 end

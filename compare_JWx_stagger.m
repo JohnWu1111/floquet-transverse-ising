@@ -1,4 +1,4 @@
-clear;
+% clear;
 clc;
 format long
 tic;
@@ -7,14 +7,15 @@ tic;
 myseed = 1;
 rng(myseed)
 
-L = 8;
+L = 4;
 num_T = 200;
 T = 0:2*num_T;
 nT = 2*num_T+1;
+dt = 1;
 len = 2^L;
-g0 = pi/2+0.0;
-J0 = -1;
-g1 = pi/2+0.1;
+g0 = 0.1;
+J = -1;
+g = 1;
 x = (0:L)';
 xx = (1:L)';
 
@@ -53,11 +54,11 @@ for i = 1:L
     temp = kron(temp, ones(2^(L-i),1));
     Hz = Hz + temp;
 end
-Hz = 2*Hz - L*ones(len,1);
+Hz = 2*Hz - L;
 
 %% initial state
 
-H0 = g0*diag(Hz) + J0*Hxx;
+H0 = g0*diag(Hz) + J*Hxx;
 [V, D] = eig(H0);
 phi0 = V(:,1);
 e_GS = D(1,1);
@@ -66,21 +67,27 @@ phi = phi0;
 phit_store = zeros(len,nT);
 phit_store(:,1) = phi0;
 
-[Vx,Dx] = eig(J0*Hxx);
-ex = diag(Dx);
+H1 = J*Hxx+g*diag(Hz);
+[V1,D1] = eig(H1);
+e1 = diag(D1);
+H2 = J*Hxx-g*diag(Hz);
+[V2,D2] = eig(H2);
+e2 = diag(D2);
 
-trans_z = exp(-1i*g1*Hz);
-trans_x = exp(-1i*ex);
+trans1 = exp(-1i*e1*dt);
+trans2 = exp(-1i*e2*dt);
 
 for i = 1:num_T
-    % Hxx
-    temp = Vx'*phi;
-    temp = temp.*trans_x;
-    phi = Vx*temp;
+    % Hxx+Hz
+    temp = V1'*phi;
+    temp = temp.*trans1;
+    phi = V1*temp;
     phit_store(:,2*i) = phi;
 
-    % Hz
-    phi = trans_z.*phi;
+    % Hxx-Hz
+    temp = V2'*phi;
+    temp = temp.*trans2;
+    phi = V2*temp;
     phit_store(:,2*i+1) = phi;
 end
 
@@ -116,7 +123,7 @@ for j = 2:L
     temp = kron(temp,C);
     temp = kron(temp,eye(2^(L-j)));
     MC1j{j} = temp;
-    C1j(j,:) = real(sum(conj(phit_store).*(temp*phit_store)));
+    C1j(j,:) = sum(conj(phit_store).*(temp*phit_store));
 
     temp = C_dag;
     for i = 1:j-2

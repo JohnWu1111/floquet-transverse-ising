@@ -7,7 +7,7 @@ tic;
 myseed = 1;
 rng(myseed)
 
-L = 8;
+L = 4;
 num_T = 200;
 T = 0:2*num_T;
 nT = 2*num_T+1;
