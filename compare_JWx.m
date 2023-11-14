@@ -7,7 +7,7 @@ tic;
 myseed = 1;
 rng(myseed)
 
-L = 8;
+L = 4;
 num_T = 200;
 T = 0:2*num_T;
 nT = 2*num_T+1;
@@ -59,6 +59,7 @@ Hz = 2*Hz - L*ones(len,1);
 
 H0 = g0*diag(Hz) + J0*Hxx;
 [V, D] = eig(H0);
+e = diag(D);
 phi0 = V(:,1);
 e_GS = D(1,1);
 
@@ -143,6 +144,6 @@ n1n2_check = n1.*n2+abs(F1j(2,:)).^2-abs(C1j(2,:)).^2;
 figure;
 set(gcf, 'position', [250 70 1400 900]);
 % subplot(2,1,1)
-plot(T,sz1sz2);
+plot(T,n1);
 
 toc;

@@ -7,7 +7,7 @@ tic;
 myseed = 1;
 rng(myseed)
 
-L = 8;
+L = 100;
 num_T = 200;
 T = 0:2*num_T;
 nT = 2*num_T+1;
@@ -66,11 +66,13 @@ phit_1_store(:,1) = phik0_1;
 phit_2_store(:,1) = phik0_2;
 
 sz1sz2 = zeros(1,nT);
+Cr = zeros(L,nT);
+Fr = zeros(L,nT);
 n = zeros(1,nT);
 n1n2 = zeros(1,nT);
 n(1) = 2*(phik_1'*phik_1)/L;
-Cr = 2*(abs(phik_1).^2)'*cospi(k*x')/L;
-Fr = -2i*(phik_1.*conj(phik_2))'*sinpi(k*x')/L;
+Cr(:,1) = 2*(abs(phik_1).^2)'*cospi(k*x')/L;
+Fr(:,1) = -2i*(phik_1.*conj(phik_2))'*sinpi(k*x')/L;
 n1n2(1) = n(1)^2 + Fr(2)^2 - Cr(2)^2;
 sz1sz2(1) = 1-4*n(1)+4*n1n2(1);
 
@@ -82,8 +84,8 @@ for i = 1:num_T
     phit_2_store(:,2*i) = phik_2;
 
     n(2*i) = 2*(phik_1'*phik_1)/L;
-    Cr = 2*(abs(phik_1).^2)'*cospi(k*x')/L;
-    Fr = -2i*(phik_1.*conj(phik_2))'*sinpi(k*x')/L;
+    Cr(:,2*i) = 2*(abs(phik_1).^2)'*cospi(k*x')/L;
+    Fr(:,2*i) = -2i*(phik_1.*conj(phik_2))'*sinpi(k*x')/L;
     n1n2(2*i) = n(2*i)^2 + Fr(2)*conj(Fr(2)) - Cr(2)^2;
     sz1sz2(2*i) = 1-4*n(2*i)+4*n1n2(2*i);
 
@@ -93,8 +95,8 @@ for i = 1:num_T
     phit_2_store(:,2*i+1) = phik_2;
 
     n(2*i+1) = 2*(phik_1'*phik_1)/L;
-    Cr = 2*(abs(phik_1).^2)'*cospi(k*x')/L;
-    Fr = -2i*(phik_1.*conj(phik_2))'*sinpi(k*x')/L;
+    Cr(:,2*i+1) = 2*(abs(phik_1).^2)'*cospi(k*x')/L;
+    Fr(:,2*i+1) = -2i*(phik_1.*conj(phik_2))'*sinpi(k*x')/L;
     n1n2(2*i+1) = n(2*i+1)^2 + Fr(2)*conj(Fr(2)) - Cr(2)^2;
     sz1sz2(2*i+1) = 1-4*n(2*i+1)+4*n1n2(2*i+1);
 end
@@ -104,6 +106,7 @@ end
 figure;
 set(gcf, 'position', [250 70 1400 900]);
 % subplot(2,1,1)
-plot(T,sz1sz2);
+% plot(T,sz1sz2);
+plot(T,n);
 
 toc;
