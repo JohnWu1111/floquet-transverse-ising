@@ -7,17 +7,20 @@ format long
 tic;
 
 %% paramter
-L = 1e5;
-J = 1;
-g1 = 1;
-g2 = -1;
+L = 1e6;
+J = -1;
+g1 = 3;
+g2 = -3;
 % k = (2/L:2/L:1)';
-k = (1/L:2/L:(L-1)/L)';
+k = (1/L:2/L:(L-1)/L+1)';
 dk = 2*pi/L;
 x = (0:L)';
 xx = (1:L)';
 % dt_all = 0.001:0.001:1;
-dt = 5*pi/(2*sqrt(2));
+% dt0 = 1.1181;
+dt0 = 1;
+% dt = dt0*pi/(2*sqrt(J^2+g1^2));
+dt = dt0*pi/(2*J);
 % dt = 100;
 
 %% constructing evolution operator
@@ -70,25 +73,38 @@ H_eff_22 = -H_eff_11;
 H_eff_12 = -(c+d*1i).*(log(a-1i*fact)-log(a+1i*fact))./(2*fact);
 H_eff_21 = conj(H_eff_12);
 
-spe = zeros(2,L/2);
+spe = zeros(L/2,2);
+spe(:,1) = -sqrt(H_eff_11(1:L/2).^2+abs(H_eff_12(1:L/2)).^2);
+spe(:,2) = -spe(:,1);
 
-zk = H_eff_11;
+xk = real(H_eff_12);
 yk = imag(H_eff_12);
+zk = H_eff_11;
 
 % dy = (yk - circshift(yk,-1));
 % dz = (zk - circshift(zk,-1));
-dy = (circshift(yk,1) - circshift(yk,-1))/2;
-dz = (circshift(zk,1) - circshift(zk,-1))/2;
-r2 = yk.^2+zk.^2;
-temp = 2*(zk.*dy - yk.*dz)./r2/(2*pi);
-WN = sum(temp);
+dx = (circshift(xk,-1) - circshift(xk,1))/2;
+dy = (circshift(yk,-1) - circshift(yk,1))/2;
+dz = (circshift(zk,-1) - circshift(zk,1))/2;
+r2 = yk.^2 + zk.^2;
+% temp = real((zk.*dy - yk.*dz)./r2/(2*pi));
+% WN = sum(temp);
 
-ftitle = strcat('L = ', num2str(L),', g1 = ', num2str(g1),', g2 = ', num2str(g2));
+ftitle = strcat('L = ', num2str(L),', g1 = ', num2str(g1),', g2 = ', num2str(g2),', dt0 = ', num2str(dt0));
 figure('Name',ftitle);
 set(gcf, 'position', [250 70 1400 900]);
-plot([yk;-yk],[zk;-zk])
+% plot([yk;-yk],[zk;-zk])
+plot3([xk;-xk],[yk;-yk],[zk;-zk])
+% plot(yk,zk)
+% plot3([yk;-yk],[zk;-zk],[k;k+1])
 xlabel('yk')
 ylabel('zk')
+
+figure('Name',ftitle);
+set(gcf, 'position', [250 70 1400 900]);
+plot(k(1:L/2),spe)
+xlabel('k')
+ylabel('E_k')
 
 
 toc;

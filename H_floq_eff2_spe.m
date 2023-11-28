@@ -8,7 +8,7 @@ tic;
 
 %% paramter
 
-L = 100000;
+L = 1e6;
 J = 1;
 g1 = 1;
 g2 = -1;
@@ -16,9 +16,9 @@ g2 = -1;
 k = (1/L:2/L:(L-1)/L)';
 x = (0:L)';
 xx = (1:L)';
-dt = 2.05*pi/(2*sqrt(2));
+dt = 1.1181*pi/(2*sqrt(2));
 % dt = 100;
-t0 = 0.5*dt;
+t0 = 0.0*dt;
 
 %% constructing evolution operator
 ck = cospi(k);
@@ -71,12 +71,15 @@ H_eff_21 = conj(H_eff_12);
 
 spe = zeros(2,L/2);
 
-for i = 1:L/2
-    H_eff = [H_eff_11(i),H_eff_12(i);
-             H_eff_21(i),H_eff_22(i)];
-    [V, D] = eig(H_eff);
-    spe(:,i) = diag(D);
-end
+% for i = 1:L/2
+%     H_eff = [H_eff_11(i),H_eff_12(i);
+%              H_eff_21(i),H_eff_22(i)];
+%     [V, D] = eig(H_eff);
+%     spe(:,i) = diag(D);
+% end
+
+spe(1,:) = -sqrt(H_eff_11.^2+abs(H_eff_12).^2)';
+spe(2,:) = -spe(1,:);
 
 % Hop_space = 2*(cos(x*k'*pi)*H_eff_11)/L;
 % Gen_space = -2i*(sin(x*k'*pi)*H_eff_12)/L;

@@ -7,15 +7,15 @@ tic;
 myseed = 1;
 rng(myseed)
 
-L = 6;
-num_T = 200;
-T = 0:2*num_T;
-nT = 2*num_T+1;
-dt = 1;
+L = 4;
 len = 2^L;
-g = 1;
-J = -1;
-g0 = 0.1;
+dt = 1e-2;
+Tmax = 10;
+T = 0:dt:Tmax;
+nT = length(T);
+g0 = 0.5;
+J0 = -1;
+g1 = 1;
 
 sigmaz = [1;-1];
 sigmax = [0 1;1 0];
@@ -23,19 +23,19 @@ I2 = eye(2);
 II2 = ones(2);
 
 %% construction of Hamiltonian and observable
-Hxx = zeros(len);
+Hzz = zeros(len,1);
 for i = 1:L-1
-    Hxx_temp = eye(2^(i-1));
-    Hxx_temp = kron(Hxx_temp, sigmax);
-    Hxx_temp = kron(Hxx_temp, sigmax);
-    Hxx_temp = kron(Hxx_temp, eye(2^(L-i-1)));
-    Hxx = Hxx + Hxx_temp;
+    Hzz_temp = ones(2^(i-1),1);
+    Hzz_temp = kron(Hzz_temp, sigmaz);
+    Hzz_temp = kron(Hzz_temp, sigmaz);
+    Hzz_temp = kron(Hzz_temp, ones(2^(L-i-1),1));
+    Hzz = Hzz + Hzz_temp;
 end
 % PBC
-Hxx_temp = sigmax;
-Hxx_temp = kron(Hxx_temp, eye(2^(L-2)));
-Hxx_temp = kron(Hxx_temp, sigmax);
-Hxx = Hxx + Hxx_temp;
+Hzz_temp = sigmaz;
+Hzz_temp = kron(Hzz_temp, ones(2^(L-2),1));
+Hzz_temp = kron(Hzz_temp, sigmaz);
+Hzz = Hzz + Hzz_temp;
 
 Hz = zeros(len,1);
 Hx = zeros(len);
@@ -64,7 +64,7 @@ end
 
 %% time evolution
 
-[V0,D0] = eig(J*Hxx+g0*diag(Hz));
+[V0,D0] = eig(J0*diag(Hzz)+g0*Hx);
 phi0 = V0(:,1);
 e_GS = D0(1,1);
 
@@ -72,27 +72,16 @@ phi = phi0;
 phit_store = zeros(len,nT);
 phit_store(:,1) = phi0;
 
-H1 = J*Hxx+g*diag(Hz);
-[V1,D1] = eig(H1);
-e1 = diag(D1);
-[V2,D2] = eig(J*Hxx-g*diag(Hz));
-e2 = diag(D2);
+[V,D] = eig(J0*diag(Hzz)+g1*Hx);
+e = diag(D);
 
-trans1 = exp(-1i*e1*dt);
-trans2 = exp(-1i*e2*dt);
+trans = exp(-1i*e*dt);
 
-for i = 1:num_T
-    % Hxx+Hz
-    temp = V1'*phi;
-    temp = temp.*trans1;
-    phi = V1*temp;
-    phit_store(:,2*i) = phi;
-
-    % Hxx-Hz
-    temp = V2'*phi;
-    temp = temp.*trans2;
-    phi = V2*temp;
-    phit_store(:,2*i+1) = phi;
+for i = 2:nT
+    temp = V'*phi;
+    temp = temp.*trans;
+    phi = V*temp;
+    phit_store(:,i) = phi;
 end
 
 %% calculate observable
@@ -101,14 +90,14 @@ Msz1sz2 = kron(sigmaz,sigmaz);
 Msz1sz2 = kron(Msz1sz2,ones(2^(L-2),1));
 sz1sz2 = sum(conj(phit_store).*(Msz1sz2.*phit_store));
 
-rho_xx = zeros(L,nT);
-rho_xx(1,:) = 1;
+rho_zz = zeros(L,nT);
+rho_zz(1,:) = 1;
 for i = 2:L
-    Msxsx = sigmax;
-    Msxsx = kron(Msxsx,eye(2^(i-2)));
-    Msxsx = kron(Msxsx,sigmax);
-    Msxsx = kron(Msxsx,eye(2^(L-i)));
-    rho_xx(i,:) = real(sum(conj(phit_store).*(Msxsx*phit_store)));
+    Mszsz = sigmaz;
+    Mszsz = kron(Mszsz,ones(2^(i-2),1));
+    Mszsz = kron(Mszsz,sigmaz);
+    Mszsz = kron(Mszsz,ones(2^(L-i),1));
+    rho_zz(i,:) = real(sum(conj(phit_store).*(Mszsz.*phit_store)));
 end
 
 sx = zeros(L,nT);
@@ -120,13 +109,11 @@ for i = 1:L
 %         sx(i,j) = phit_store(:,j)'*matrix_sx{i}*phit_store(:,j);
 %     end
 end
-order = sqrt(sum(rho_xx)/L);
+order = sum(sz.^2)/L;
 
 figure;
 set(gcf, 'position', [250 70 1400 900]);
-% subplot(2,1,1)
 plot(T,order);
-% subplot(2,1,2)
-% plot(T,sx_mean);
+% mesh(rho_xx)
 
 toc;

@@ -9,8 +9,8 @@ tic;
 %% paramter
 L = 1e5;
 J = 1;
-g1 = 0.5;
-g2 = -0.5;
+g1 = 1;
+g2 = 0.5;
 % k = (2/L:2/L:1)';
 k = (1/L:2/L:(L-1)/L+1)';
 dk = 2*pi/L;
@@ -21,7 +21,8 @@ dt_all = 0.01:0.01:10;
 ndt = length(dt_all);
 % dt = 100;
 
-WN = zeros(ndt,1);
+WN1 = zeros(ndt,1);
+WN2 = zeros(ndt,1);
 
 %% constructing evolution operator
 for n = 1:ndt
@@ -92,27 +93,37 @@ for n = 1:ndt
 %     H_eff_12 = (c+d*1i).*lm./(2*fact);
 %     H_eff_21 = conj(H_eff_12);
 
-    spe = zeros(2,L/2);
+%     spe = zeros(2,L/2);
 
+%     ykr = real(H_eff_12);
+%     yki = imag(H_eff_12);
+%     ykr = abs(H_eff_12);
+%     yki = 0;
     yk = H_eff_12;
     zk = H_eff_11;
 
-    % dy = (yk - circshift(yk,-1));
-    % dz = (zk - circshift(zk,-1));
-    % dx = (circshift(xk,-1) - circshift(xk,1))/2;
-    dy = (circshift(yk,-1) - circshift(yk,1))/2;
-    dz = (circshift(zk,-1) - circshift(zk,1))/2;
-    r2 = yk.^2 + zk.^2;
-    temp = (yk./zk).*(zk.*dy - yk.*dz)./r2/(2*pi);
-    WN(n) = sum(temp);
+%     phi1 = atan((zk+yki)./ykr);
+%     phi2 = atan((zk-yki)./ykr);
+%     dphi1 = (circshift(phi1,-1) - circshift(phi1,1))/2;
+%     dphi2 = (circshift(phi2,-1) - circshift(phi2,1))/2;
+%     WN1(n) = sum(dphi1)/(2*pi);
+%     WN2(n) = sum(dphi2)/(2*pi);
+
+    phi1 = atan(yk./zk);
+    dphi1 = (circshift(phi1,-1) - circshift(phi1,1))/2;
+    WN1(n) = sum(dphi1)/(2*pi);
 end
 
 ftitle = strcat('L = ', num2str(L),', g1 = ', num2str(g1),', g2 = ', num2str(g2));
 figure('Name',ftitle);
 set(gcf, 'position', [250 70 1400 900]);
-plot(dt_all,WN)
+subplot(2,1,1)
+plot(dt_all,WN1)
 xlabel('/(2*pi/sqrt(2))')
 ylabel('Winding Number')
-
+subplot(2,1,2)
+plot(dt_all,WN2)
+xlabel('/(2*pi/sqrt(2))')
+ylabel('Winding Number')
 
 toc;
